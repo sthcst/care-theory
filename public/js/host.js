@@ -1,6 +1,15 @@
 import { FINISH, MIN_PLAYERS, MAX_PLAYERS, tileText } from "./tiles.js";
 import { newState, apply, currentId } from "./game.js";
-import { isLocal, getState, writeState, watchActions, closeRoom } from "./sync.js";
+import { isLocal, getState, writeState, watchActions, watchState, closeRoom } from "./sync.js";
+
+// Closing never hangs the UI: if the database is slow or unreachable, we give
+// up waiting after a few seconds and move on anyway.
+async function safeClose(code) {
+  await Promise.race([
+    closeRoom(code).catch(e => console.warn("Couldn't close the old room", e)),
+    new Promise(r => setTimeout(r, 4000)),
+  ]);
+}
 
 const $ = id => document.getElementById(id);
 const board = $("board"), center = $("center"), tokensEl = $("tokens");
@@ -35,9 +44,9 @@ let state = code ? await getState(code) : null;
 // host.html?new (the "Host a new game" link) starts over instead of resuming.
 // A game that's still going is closed for its players, after asking.
 if (params.has("new") && state && state.phase !== "closed") {
-  const live = state.phase !== "ended" && state.order.length;
-  if (!live || confirm(`A game (code ${code}) is still going on this screen. End it and start a new one?`)) {
-    try { await closeRoom(code); } catch (e) { console.warn("Couldn't close the old room", e); }
+  const inProgress = state.phase !== "ended" && state.order.length;
+  if (!inProgress || confirm(`A game (code ${code}) is still going on this screen. End it and start a new one?`)) {
+    await safeClose(code);
     state = null;
   }
 }
@@ -54,8 +63,24 @@ const qrEl = document.createElement("div");
 qrEl.className = "qr";
 new QRCode(qrEl, { text: joinUrl, width: 256, height: 256 });
 
+// True until this room is closed, by this screen or any other (another host
+// tab/window left open on the same room, or the room being closed remotely).
+// A stale tab that kept this false would otherwise keep reacting to player
+// actions and writing the old game right back after a "New game" reset.
+let roomOpen = true;
+watchState(code, s => {
+  if (roomOpen && s && s.phase === "closed") {
+    roomOpen = false;
+    $("reset").disabled = true;
+    center.innerHTML = `<h1>This game has ended</h1>
+      <p class="muted">It was closed from another screen or tab.</p>
+      <div><button class="primary" id="restart">Start a new game</button></div>`;
+    $("restart").onclick = () => { localStorage.removeItem("ct-host-room"); location.href = "host.html"; };
+  }
+});
+
 function commit(next) {
-  if (next === state) return;
+  if (!roomOpen || next === state) return;
   state = next;
   writeState(code, state);
   render();
@@ -70,8 +95,9 @@ async function newGame() {
     state.phase === "playing" ? "End this game and start a new one? Everyone's progress will be lost and all players will be removed." :
     `Start over with a new code? The ${players} player${players > 1 ? "s" : ""} who joined will be removed.`;
   if (ask && !confirm(ask)) return;
+  roomOpen = false;
   $("reset").disabled = true;
-  try { await closeRoom(code); } catch (e) { console.warn("Couldn't close the old room", e); }
+  await safeClose(code);
   localStorage.removeItem("ct-host-room");
   location.href = "host.html";
 }
