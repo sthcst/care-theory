@@ -29,8 +29,18 @@ for (let n = 0; n <= FINISH; n++) {
 
 // ---------- Room setup / resume ----------
 const genCode = () => Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random() * 24)]).join("");
-let code = new URLSearchParams(location.search).get("room") || localStorage.getItem("ct-host-room");
+const params = new URLSearchParams(location.search);
+let code = params.get("room") || localStorage.getItem("ct-host-room");
 let state = code ? await getState(code) : null;
+// host.html?new (the "Host a new game" link) starts over instead of resuming.
+// A game that's still going is closed for its players, after asking.
+if (params.has("new") && state && state.phase !== "closed") {
+  const live = state.phase !== "ended" && state.order.length;
+  if (!live || confirm(`A game (code ${code}) is still going on this screen. End it and start a new one?`)) {
+    try { await closeRoom(code); } catch (e) { console.warn("Couldn't close the old room", e); }
+    state = null;
+  }
+}
 if (!state || state.phase === "closed") {
   code = genCode();
   state = newState();
