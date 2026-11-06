@@ -1,0 +1,16 @@
+{
+  "name": "jam-project",
+  "version": "1.0.0",
+  "description": "A 24-tile board game. The host shows the board on a projector; players and tandems join on their phones with a 4-letter code, enter their physical dice roll, and answer each tile out loud.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "firebase-tools": "^15.34.2"
+  }
+}

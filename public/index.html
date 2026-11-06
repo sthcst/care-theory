@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Care Theory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="phone">
+    <h1>Care Theory</h1>
+    <p class="muted">Enter the code shown on the big screen.</p>
+    <form class="stack" onsubmit="event.preventDefault(); location.href = 'play.html?room=' + this.code.value.trim().toUpperCase();">
+      <input name="code" placeholder="ABCD" maxlength="4" autocomplete="off" autocapitalize="characters" style="font-size:28px;text-align:center;letter-spacing:.2em" required>
+      <button class="primary">Join game</button>
+    </form>
+    <div class="spacer" style="flex:1"></div>
+    <a href="host.html" class="muted" style="text-align:center">Host a new game on this screen</a>
+  </div>
+</body>
+</html>
