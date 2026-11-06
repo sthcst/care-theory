@@ -30,10 +30,13 @@ export const MOVE_TILES = [8, 15, 22];
 export const NO_SELF_TILES = [22];
 export const SKIP_PENALTY = 2;
 export const MIN_PLAYERS = 3;
-export const MAX_PLAYERS = 10;
+export const MAX_PLAYERS = 30;
 export const PODIUM_SIZE = 3;
 
-export const SYMBOLS = ["🦊", "🐻", "🐼", "🐸", "🐯", "🐙", "🦄", "🐝", "🐢", "🦋", "🐧", "🐨"];
-export const COLORS = ["#E4572E", "#2E86DE", "#17A589", "#8E44AD", "#F39C12", "#D81B60", "#5D6D7E", "#27AE60", "#C0392B", "#00897B"];
+// One symbol per player who can join at once, so this must have at least MAX_PLAYERS entries.
+export const SYMBOLS = ["🦊", "🐻", "🐼", "🐸", "🐯", "🐙", "🦄", "🐝", "🐢", "🦋", "🐧", "🐨",
+  "🐰", "🐱", "🐶", "🐷", "🐮", "🦁", "🐵", "🦉", "🦇", "🐺", "🦒", "🦓", "🐳", "🦈", "🦀", "🐬", "🐿️", "🦔"];
+export const COLORS = ["#E4572E", "#2E86DE", "#17A589", "#8E44AD", "#F39C12", "#D81B60", "#5D6D7E", "#27AE60", "#C0392B", "#00897B",
+  "#3F51B5", "#8D6E63", "#009688", "#7CB342", "#EC407A", "#546E7A", "#FFA000", "#5E35B1", "#039BE5", "#AD1457"];
 
 export const tileText = n => TILES[n - 1] || "";
