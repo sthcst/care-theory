@@ -1,6 +1,6 @@
 import { FINISH, MIN_PLAYERS, MAX_PLAYERS, tileText } from "./tiles.js";
 import { newState, apply, currentId } from "./game.js";
-import { isLocal, getState, writeState, watchActions } from "./sync.js";
+import { isLocal, getState, writeState, watchActions, closeRoom } from "./sync.js";
 
 const $ = id => document.getElementById(id);
 const board = $("board"), center = $("center"), tokensEl = $("tokens");
@@ -31,7 +31,7 @@ for (let n = 0; n <= FINISH; n++) {
 const genCode = () => Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random() * 24)]).join("");
 let code = new URLSearchParams(location.search).get("room") || localStorage.getItem("ct-host-room");
 let state = code ? await getState(code) : null;
-if (!state) {
+if (!state || state.phase === "closed") {
   code = genCode();
   state = newState();
   await writeState(code, state);
@@ -52,6 +52,20 @@ function commit(next) {
   layoutTokens();
 }
 watchActions(code, a => commit(apply(state, a)));
+
+// ---------- New game: close this room and open a fresh one with a new code ----------
+async function newGame() {
+  const players = state.order.length;
+  const ask = state.phase === "ended" || !players ? "" :
+    state.phase === "playing" ? "End this game and start a new one? Everyone's progress will be lost and all players will be removed." :
+    `Start over with a new code? The ${players} player${players > 1 ? "s" : ""} who joined will be removed.`;
+  if (ask && !confirm(ask)) return;
+  $("reset").disabled = true;
+  try { await closeRoom(code); } catch (e) { console.warn("Couldn't close the old room", e); }
+  localStorage.removeItem("ct-host-room");
+  location.href = "host.html";
+}
+$("reset").onclick = newGame;
 
 // ---------- Rendering ----------
 const chip = (id, p) => `<span class="chip ${id === currentId(state) && state.phase === "playing" ? "turn" : ""} ${p.rank ? "done" : ""}">
@@ -102,7 +116,7 @@ function render() {
       <h1>Game over</h1>
       <div class="podium">${step(b, "calc(var(--c) * 1.1)", 2)}${step(a, "calc(var(--c) * 1.6)", 1)}${step(c, "calc(var(--c) * .7)", 3)}</div>
       <div><button id="again">New game</button></div>`;
-    $("again").onclick = () => { localStorage.removeItem("ct-host-room"); location.href = "host.html"; };
+    $("again").onclick = newGame;
   }
 }
 

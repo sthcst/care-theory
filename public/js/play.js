@@ -23,6 +23,7 @@ const who = p => `<div class="who"><span class="sym" style="background:${p.color
 
 function render() {
   const s = state;
+  if (s?.phase === "closed") return show("closed", `<h1>This game has ended</h1><p class="muted">The host started a new game. Scan the new QR code on the big screen, or enter the new code.</p><a href="index.html">Enter a new code</a>`);
   if (!s) return show("missing", `<h1>Room ${esc(code)} not found</h1><p class="muted">Check the code on the big screen.</p><a href="index.html">Try another code</a>`);
   const me = s.players[pid];
 

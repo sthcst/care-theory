@@ -8,6 +8,10 @@ A 24-tile board game. The host shows the board on a projector; players and tande
 - `public/js/tiles.js` — the 24 tiles and game settings
 - `public/js/game.js` — the rules
 
+## Starting over
+
+The host screen has a **↻ New game** button in the top-right corner. It asks first, then closes the current room and opens a new one with a fresh code and QR code. Phones still in the old room see "This game has ended" and can join the new code. Reloading `host.html` resumes the current game instead.
+
 ## Test locally
 
 ```bash

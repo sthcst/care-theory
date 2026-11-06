@@ -39,6 +39,15 @@ export async function writeState(code, state) {
   await f.set(f.ref(db, `rooms/${code}/state`), clean);
 }
 
+// Ends a room for everyone: phones still in it see a "game ended" screen,
+// and any unhandled actions are dropped with it.
+export async function closeRoom(code) {
+  const closed = { phase: "closed" };
+  if (isLocal) return writeState(code, closed);
+  const f = await fb();
+  await f.set(f.ref(db, `rooms/${code}`), { state: closed });
+}
+
 export function watchState(code, cb) {
   if (isLocal) {
     const l = { code, cb };
